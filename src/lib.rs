@@ -1,12 +1,14 @@
-use std::fs;
+use wasm_bindgen::prelude::*;
 
 const MEM_SIZE: usize = 30000;
 
-fn interpret(program: &str) {
+#[wasm_bindgen]
+pub fn interpret(program: &str) -> String {
     let mut memory = [0; MEM_SIZE];
     let mut pointer: usize = 0;
 
     let mut position: usize = 0;
+    let mut output = String::from("");
 
     while position < program.len() {
         let current_instruction = program.chars().nth(position).unwrap();
@@ -27,7 +29,7 @@ fn interpret(program: &str) {
             }
             '+' => memory[pointer] += 1,
             '-' => memory[pointer] -= 1,
-            '.' => print!("{}", memory[pointer] as u8 as char),
+            '.' => output.push(memory[pointer] as u8 as char),
             ',' => memory[pointer] = read_byte(),
             '[' => {
                 if memory[pointer] == 0 {
@@ -44,6 +46,8 @@ fn interpret(program: &str) {
 
         position += 1;
     }
+
+    output
 }
 
 fn matching_bracket(program: &str, mut position: usize) -> usize {
@@ -78,9 +82,4 @@ fn read_byte() -> u8 {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input).unwrap();
     input.chars().nth(0).unwrap() as u8
-}
-
-fn main() {
-    let program = fs::read_to_string("program.bf").unwrap();
-    interpret(&program);
 }

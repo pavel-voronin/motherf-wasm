@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+    <script type="module">
+      import init, { interpret } from "./pkg/motherf_wasm.js";
+
+      async function run() {
+        await init();
+
+        const code =
+          ">++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++" +
+          ".>>++++++[<+++++++>-]<++.------------.>++++++[<+++++++++>-]" +
+          "<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.";
+
+        const result = interpret(code);
+        console.log(`From motherf-wasm:`, result);
+      }
+
+      run();
+    </script>
+  </body>
+</html>
