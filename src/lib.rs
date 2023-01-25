@@ -4,6 +4,11 @@ extern crate console_error_panic_hook;
 
 const MEM_SIZE: usize = 30000;
 
+enum SearchDirection {
+    FORWARD,
+    BACKWARD,
+}
+
 #[wasm_bindgen]
 pub fn interpret(program: &str, input: &str) -> String {
     console_error_panic_hook::set_once();
@@ -42,12 +47,12 @@ pub fn interpret(program: &str, input: &str) -> String {
             }
             '[' => {
                 if memory[pointer] == 0 {
-                    position = matching_bracket(program, position);
+                    position = find_matching_bracket_for_opening(program, position);
                 }
             }
             ']' => {
                 if memory[pointer] != 0 {
-                    position = matching_bracket(program, position);
+                    position = find_matching_bracket_for_closing(program, position);
                 }
             }
             _ => (),
@@ -59,30 +64,34 @@ pub fn interpret(program: &str, input: &str) -> String {
     output
 }
 
-fn matching_bracket(program: &str, mut position: usize) -> usize {
-    let current_instruction = program.chars().nth(position).unwrap();
-    if current_instruction == ']' {
-        let mut bracket_counter = 1;
-        while bracket_counter > 0 {
-            position -= 1;
-            let current_instruction = program.chars().nth(position).unwrap();
-            if current_instruction == '[' {
-                bracket_counter -= 1;
-            } else if current_instruction == ']' {
-                bracket_counter += 1;
-            }
+fn find_matching_bracket(program: &str, mut position: usize, direction: SearchDirection) -> usize {
+    let mut bracket_counter = 1;
+
+    while bracket_counter > 0 {
+        match direction {
+            SearchDirection::FORWARD => position += 1,
+            SearchDirection::BACKWARD => position -= 1,
         }
-    } else {
-        let mut bracket_counter = 1;
-        while bracket_counter > 0 {
-            position += 1;
-            let current_instruction = program.chars().nth(position).unwrap();
-            if current_instruction == ']' {
-                bracket_counter += 1;
-            } else if current_instruction == '[' {
-                bracket_counter -= 1;
-            }
+
+        let current_instruction = program
+            .chars()
+            .nth(position)
+            .unwrap_or_else(|| panic!("out of code"));
+
+        if current_instruction == '[' {
+            bracket_counter -= 1;
+        } else if current_instruction == ']' {
+            bracket_counter += 1;
         }
     }
+
     position
+}
+
+fn find_matching_bracket_for_opening(program: &str, position: usize) -> usize {
+    find_matching_bracket(program, position, SearchDirection::FORWARD)
+}
+
+fn find_matching_bracket_for_closing(program: &str, position: usize) -> usize {
+    find_matching_bracket(program, position, SearchDirection::BACKWARD)
 }
