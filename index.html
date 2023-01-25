@@ -9,15 +9,17 @@
       async function run() {
         await init();
 
-        const code =
-          ">++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++" +
-          ".>>++++++[<+++++++>-]<++.------------.>++++++[<+++++++++>-]" +
-          "<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.";
+        const code = ",.";
+        const input = "a";
 
-        const result = interpret(code);
-        console.log(`From motherf-wasm:`, result);
+        try {
+          const result = interpret(code, input);
+
+          console.log(`From motherf-wasm:`, result);
+        } catch (error) {
+          console.error(error.message);
+        }
       }
-
       run();
     </script>
   </body>
