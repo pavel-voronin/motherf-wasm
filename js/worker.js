@@ -1,4 +1,4 @@
-import init, { interpret } from "./pkg/motherf_wasm.js";
+import init, { interpret } from "/pkg/motherf_wasm.js";
 
 init();
 
