@@ -42,7 +42,11 @@ pub fn interpret(program: &str, input: &str) -> String {
             '-' => memory[pointer] -= 1,
             '.' => output.push(memory[pointer] as u8 as char),
             ',' => {
-                memory[pointer] = input.chars().nth(input_position).unwrap() as u8;
+                memory[pointer] = input
+                    .chars()
+                    .nth(input_position)
+                    .unwrap_or_else(|| panic!("out of input"))
+                    as u8;
                 input_position += 1;
             }
             '[' => {

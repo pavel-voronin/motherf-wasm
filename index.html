@@ -3,49 +3,84 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
   </head>
   <body>
-    <form id="form">
-      <p>
-        <textarea name="code" cols="80" rows="10">
+    <div>
+      <textarea id="code" cols="80" rows="10">
 >++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<+
 +.------------.>++++++[<+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-
 ]<+.</textarea
-        >
-      </p>
-      <p>
-        <textarea name="input" cols="80" rows="10">a</textarea>
-      </p>
-      <p><b>Output:</b> <pre id="output"></pre></p>
-      <p><b>Error:</b> <pre id="error"></pre></p>
-      <p>
-        <button type="submit">Run</button>
-      </p>
-    </form>
+      >
+    </div>
+    <div>
+      <textarea id="input" cols="80" rows="10">a\0</textarea>
+    </div>
+    <div>
+      <b>Output:</b>
+      <pre id="output"></pre>
+    </div>
+    <div>
+      <b>Error:</b>
+      <pre id="error"></pre>
+    </div>
+    <div>
+      <button id="run">Run</button>
+      <button id="terminate">Terminate</button>
+    </div>
 
     <script type="module">
-      import init, { interpret } from "./pkg/motherf_wasm.js";
+      let worker;
+      let terminateButton,
+        runButton,
+        codeField,
+        inputField,
+        outputField,
+        errorField;
 
       async function run() {
-        const code = document.getElementsByName("code")[0].value.trim();
-        const input = document.getElementsByName("input")[0].value.trim();
+        const code = codeField.value.trim();
+        const input = inputField.value.trim().replaceAll("\\0", "\0");
 
-        try {
-          const result = interpret(code, input);
+        outputField.innerHTML = "...";
+        errorField.innerHTML = "";
 
-          document.getElementById("output").innerHTML = result;
-        } catch (error) {
-          document.getElementById("output").innerHTML = error.message;
-        }
+        worker.postMessage({ code, input });
+      }
+
+      function terminate() {
+        worker.terminate();
+
+        outputField.innerHTML = "";
+        errorField.innerHTML = "<i>terminated</i>";
+
+        initWorker();
+      }
+
+      function initWorker() {
+        worker = new Worker("worker.js", { type: "module" });
+
+        worker.onmessage = function ({ data: { result, error } }) {
+          outputField.innerHTML = "";
+          errorField.innerHTML = "";
+
+          if (result !== null) {
+            outputField.innerHTML = result;
+          } else if (error !== null) {
+            errorField.innerHTML = error;
+          }
+        };
       }
 
       async function initialize() {
-        const form = document.getElementById("form");
+        terminateButton = document.getElementById("terminate");
+        runButton = document.getElementById("run");
+        codeField = document.getElementById("code");
+        inputField = document.getElementById("input");
+        outputField = document.getElementById("output");
+        errorField = document.getElementById("error");
 
-        form.addEventListener("submit", (e) => {
-          run();
-          e.preventDefault();
-        });
+        runButton.addEventListener("click", run);
+        terminateButton.addEventListener("click", terminate);
 
-        console.log(await init());
+        initWorker();
       }
 
       initialize();
