@@ -3,24 +3,52 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
   </head>
   <body>
+    <form id="form">
+      <p>
+        <textarea name="code" cols="80" rows="10">
+>++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<+
++.------------.>++++++[<+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-
+]<+.</textarea
+        >
+      </p>
+      <p>
+        <textarea name="input" cols="80" rows="10">a</textarea>
+      </p>
+      <p><b>Output:</b> <pre id="output"></pre></p>
+      <p><b>Error:</b> <pre id="error"></pre></p>
+      <p>
+        <button type="submit">Run</button>
+      </p>
+    </form>
+
     <script type="module">
       import init, { interpret } from "./pkg/motherf_wasm.js";
 
       async function run() {
-        await init();
-
-        const code = ",.";
-        const input = "a";
+        const code = document.getElementsByName("code")[0].value.trim();
+        const input = document.getElementsByName("input")[0].value.trim();
 
         try {
           const result = interpret(code, input);
 
-          console.log(`From motherf-wasm:`, result);
+          document.getElementById("output").innerHTML = result;
         } catch (error) {
-          console.error(error.message);
+          document.getElementById("output").innerHTML = error.message;
         }
       }
-      run();
+
+      async function initialize() {
+        const form = document.getElementById("form");
+
+        form.addEventListener("submit", (e) => {
+          run();
+          e.preventDefault();
+        });
+
+        console.log(await init());
+      }
+
+      initialize();
     </script>
   </body>
 </html>
